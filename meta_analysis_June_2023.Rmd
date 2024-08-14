@@ -36,14 +36,16 @@ The final search terms from litsearchr were as given below
 The search yielded 49,352 studies and after reading abstracts and titles for actual relevance and data availability, the number of studies was reduced to 481 (by excluding studies that were not mainly targeting wood decomposition) from which the full texts were read. After examining the full texts, we included the studies on WD decomposition that met the following criteria. **(i) Reported explicitly the methods used to allow or exclude invertebrate access to the WD during decomposition** **(ii) Reported changes in WD mass or density or volume through decomposition duration or associated decay rate estimates in the presence or absence of invertebrates in both inclusion or exclusion treatments.** **(iii) Reported the tree species, bark status (present or absent) and diameter of the WD used.** **(iv) Reported the duration of decomposition.**
 We ended having *20* studies that met the above criteria (see the sources section in the main text for the list of these included studies and Fig below for the meta-analysis PRISMA flow diagram). We extracted data from all the *20* articles. In total, we included *1427* paired observations with both an invertebrate inclusion and exclusion treatment at the tree species level. 
 ![PRISMA flow chat for the meta-analysis](Prisma.png).
+Figure S2 PRISMA flowchart of diagram showing the steps followed for the inclusion of studies in our database.
 
 We aimed at testing the following hypothesis as indicated in our hypothetical framework shown below.
 
-We hypothesize that: (i) Besides climatic contributions to the invertebrate effect on decomposition, variation in deadwood traits will constrain invertebrate effects with different effects across climatic zones (Stronger magnitude in tropical zone) (ii) the effect of invertebrates will be greater in WD with a larger diameter; (iii) bark presence will increase  the effect of invertebrates on wood decomposition; (iv) the effects of invertebrates will be greater in natural (non-processed, either with or without bark) wood than in processed wood (e.g., blocks, stakes, dowels, mostly without bark) as the latter may be perceived as novel materials; (v) the effect of invertebrates on WD decomposition will be higher in Angiosperm than in gymnosperms, as the powerful anti-herbivory defenses in gymnosperms will deter invertebrate decomposers 
+We hypothesize that: (i) the invertebrate effect on WD decomposition is climate dependent and variations in deadwood traits will constrain the invertebrate effect with larger effect sizes in warmer climate zones (i.e. stronger in magnitude in tropical zones); (ii) the effect of invertebrates will be greater in WD with a larger diameter; (iii) bark presence will increase the effect of invertebrates on wood decomposition; (iv) the effects of invertebrates will be greater in natural non-processed wood, either with or without bark than in processed wood (e.g. blocks, stakes, dowels, mostly without bark) as the latter may be perceived by invertebrates as novel materials; (v) the effect of invertebrates on WD decomposition will be greater in angiosperms than in gymnosperms, as the powerful anti-herbivory defences present in gymnosperms will deter invertebrate decomposers.
 
 ![hypothetical framework](graphical hypothesis.png)
+**Figure S1 Conceptual framework on which our meta-analysis is based.** 
 
-The sections below shows how we analysed the extracted data how we obtained/plotted all the figures and tables shown in the submitted manuscript 
+The sections below shows how we analysed the extracted data how we obtained/plotted all the figures and tables shown in the submitted manuscript.
 
 
 ## Import the extracted data for the meta-analysis
@@ -160,15 +162,6 @@ wood_meta3$climate_zone<- with(wood_meta3, factor(climate_abbrev,
 
 We can now see that based on our coarse classifications of experimental sites based on the Koppen geiger classification we have 481 observations in tropical zone,  31 in arid zone 1085 in temperate zone and 170 in continental zone region.
 
-#Next we create a new dataframe (wood_meta_lab) with observations that report decomposition of roots
-
-```{r, warning=FALSE, results='hide'}
-wood_meta_root<- wood_meta[wood_meta$woody_debris_type == "root",]
-dim(wood_meta_root)
-```
-we have 8 paired observations reporting the decomposition of roots
-
-
 
 # Data exploration
 
@@ -248,7 +241,7 @@ p<- p+ theme(legend.position="bottom", legend.box = "vertical") +
 figure1<- p+theme(legend.title = element_text(face = "bold",size = 12))+ theme(legend.text=element_text(size=11))
 figure1
 path<- getwd()
-ggsave(filename="Geographical_distribution.png", plot=figure1, device="png",
+ggsave(filename="Figure 1 Geographical_distribution of study sites.png", plot=figure1, device="png",
        path=path, height=5, width=7, units="in", dpi=500)
 ```
 
@@ -283,7 +276,7 @@ In as much as we managed to extract the temperature and precipitation data from 
 *https://www.gis-blog.com/r-raster-data-acquisition/*.
 
 
-```{r,warning=FALSE}
+```{r,warning=FALSE,results='hide'}
 library(raster)
 ```
 First we create a data frame with sites and their geographical coordinates.  
@@ -304,7 +297,7 @@ r2 <- raster::getData("worldclim", var="bio", res=2.5, download = F)
 We need to select the required layers. 
 We are looking for layers 1 and 12, they stand respectively for mean annual temperature (C*10) and precipitation (mm).For temperature we have to divide by 10 to get the actual temperature in degrees Celsius. 
 
-```{r, warning=FALSE}
+```{r, warning=FALSE,results='hide'}
 r2 <- r2[[c(1, 12)]] 
 names(r2) <- c("Tmean", "Precip")
 ```
@@ -364,6 +357,7 @@ random_m <- rma(yi = yi, vi = vi, method = "REML", data = wood_meta_fauna)
 summary(random_m)
 
 ```
+
 ```{r, warning=FALSE}
 exp(0.2569)
 ```
@@ -376,20 +370,35 @@ From our results the estimate effect size of our meta-analysis is significant. T
 To visually check for publication bias, we plot a funnel plot using the inbuilt **funnel** function in metafor.
 In the absence of publication bias, the studies should be evenly distributed and the funnel should be symmetrical. If the studies are skewed to the right, this would mean that more studies reported positive effect of soil invertebrates on WD decomposition implying that studies on the negative effect of soil invertebrates are often not reported. If the studies are skewed to the left then it means that more studies reported negative effect of soil invertebrates on WD decomposition and positive effects of soil invertebrates on WD decomposition is often not reported. 
 
-```{r}
+```{r, warning=FALSE, results="hide"}
 funnel(random_m,ylim=c(.00001,9))
 ```
 
 ### Plot a contour funnel plot instead
 
-```{r}
-funnel(wood_meta_fauna$yi, wood_meta_fauna$vi, yaxis="seinv",
+```{r, warning=FALSE, results='hide'}
+png(file="Figure S4 Funnel plot.png")
+funnel_plot<-funnel(wood_meta_fauna$yi, wood_meta_fauna$vi, yaxis="seinv", height=9, width=9, units="in", dpi=500,
+       xlim=c(-4,4), ylim=c(.00001,30), xaxs="i", yaxs="i", las=1,
+       level=c(.10, .05, .01), shade=c("white", "gray55", "gray75"),
+       text.font = 3,back="gray90", ylab="Precision (1/se)", xlab= "Efffect size [ln(RR)]")
+legend("topright", legend= c("0.10 < P ≤ 1.00 ", "0.05 < P ≤ 0.10", "0.05 < P ≤ 0.01", "0.00 < P ≤ 0.01"),text.font = 3, bg= "white",fill = c("white", "gray55", "gray75", "gray90"))
+
+
+print(funnel_plot)
+dev.off()
+```
+
+```{r, warning=FALSE}
+funnel(wood_meta_fauna$yi, wood_meta_fauna$vi, yaxis="seinv", height=9, width=9, units="in", dpi=500,
        xlim=c(-4,4), ylim=c(.00001,30), xaxs="i", yaxs="i", las=1,
        level=c(.10, .05, .01), shade=c("white", "gray55", "gray75"),
        text.font = 3,back="gray90", ylab="Precision (1/se)", xlab= "Efffect size [ln(RR)]")
 legend("topright", legend= c("0.10 < P ≤ 1.00 ", "0.05 < P ≤ 0.10", "0.05 < P ≤ 0.01", "0.00 < P ≤ 0.01"),text.font = 3, bg= "white",fill = c("white", "gray55", "gray75", "gray90"))
 
 ```
+
+**Figure S4 Funnel plot**
 
 There is some little asymmetry in the funnel since some studies seems to be missing on the left side of the funnel. This could be a result of having few observations on the negative effect of soil invertebrates on wood decomposition. Therefore, we need to consider if this bias can affect our conclusion by calculating the Rosenberg fail test number. 
 
@@ -610,7 +619,7 @@ plot4b
 ```
 
 ```{r}
-ggsave(filename="diameter_overall.png", plot=plot4b, device="png",
+ggsave(filename="Figure 2 Effect of invertebrate on woody debris overall.png", plot=plot4b, device="png",
        path=path, height=5, width=7, units="in", dpi=500)
 ```
 
@@ -800,7 +809,7 @@ plot12b
 library(patchwork)
 fig_diameter<-  plot4b +plot9b+plot11b+plot12b
 fig_diameter
-ggsave(filename="diameter.png", plot=fig_diameter, device="png",
+ggsave(filename="Figure 3 diameter.png", plot=fig_diameter, device="png",
        path=path, height=8, width=12, units="in", dpi=500)
 ```
 
@@ -1018,7 +1027,7 @@ plot13
 library(patchwork)
 figx<- plot13+ plot9 + plot11 +plot10
 figx
-ggsave(filename="figx.png", plot=figx, device="png",
+ggsave(filename="Figure 4 Effect of woody debris diameterBark_across_climates.png", plot=figx, device="png",
        path=path, height=8, width=12, units="in", dpi=500)
 ```
 
@@ -1054,7 +1063,7 @@ p_his<-ggplot(wood_meta_fauna, aes(x=wood_diameter/10)) +
 p_his 
 ```
 ```{r,warning=FALSE}
-ggsave(filename="diameter hist.png", plot=p_his, device="png",
+ggsave(filename="Figure S3 Diameter hist.png", plot=p_his, device="png",
        path=path, height=4, width=5, units="in", dpi=500)
 ```
 
@@ -1310,7 +1319,7 @@ region_duration<- ggplot()+
 region_duration
 ```
 ```{r,warning=FALSE}
-ggsave(filename="region_duration.png", plot=region_duration, device="png",
+ggsave(filename="Figure 5 Effects of incubation duration on invertebrate effect.png", plot=region_duration, device="png",
      path=path, height=4, width=5, units="in", dpi=500)
 ```
 
@@ -1461,6 +1470,3 @@ estimate
 # Conclusion 
 
 This study investigated woody debris (WD) decomposition which is an important process in nutrient cycling within ecosystems. The results add to the current ecology knowledge by revealing that invertebrates contribute to WD decomposition and that their contribution varies with climate zone and species traits.
-
-
-
