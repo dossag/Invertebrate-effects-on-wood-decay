@@ -1,0 +1,1466 @@
+---
+title: "Njoroge et al 2023 meta-analysis"
+author: "Denis Mburu Njoroge, Gbadamassi G.O. Dossa, Juan Zuo"
+date: (Created on April 20 2022 and last updated on `r format(Sys.time(), "%a %b %d %Y %H:%M:%S")`)
+output: 
+#rmdformats::material
+  html_document:
+    fig_caption: yes #Enabling figure caption
+    theme: spacelab #readable #sandstone #spacelab #flatly
+    highlight: pygments #tango #kate
+    toc: TRUE # Enabling table of content (toc) on the left side of output
+    toc_depth: 3 # Showing toc up to 3 headings below (i.e.,1, 1.1, 1.1.1)
+    number_sections: TRUE # Number sections
+    toc_float:
+      collapsed: TRUE # Allows the toc to collapse if the reading section is not concerned
+      smooth_scroll: TRUE # Allows smoth scrolling of toc
+      toc: true
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,cache = TRUE)
+```
+
+# Introduction
+This script records the meta-analysis based on the manuscript "The effects of invertebrates on wood decomposition across the world" submitted to Biological  journal. This meta-analysis aims to quantitatively estimate the contribution of invertebrates to wood decomposition globally.
+
+# How we acquired the data
+In November 2021, we carried out a litterature search for studies on woody debris (WD) decomposition and the contribution of invertebrates to WD decomposition in the Scopus database and ISI web of science. We used “litsearchr” package (Grames et al 2018) to refine the search language (see procedure in flow chart below), then we later used the refined search terms to redo search in the above mentioned databases. 
+![Litsearchr flow chart](litsearchr.png)
+The final search terms from litsearchr were as given below
+
+*"coarse woody OR "woody debris" OR "woody material" OR "woody plant" OR roots OR "fine wood debris" AND "decay rates" OR "decay resistance" OR decomposition OR degradation  AND "beetle assemblages" OR "beetle attack" OR "beetle communities" OR "beetle diversity" OR "beetle infestation\" OR "beetle outbreak" OR "beetle outbreaks" OR "beetle species" OR "benthic invertebrate" OR "benthic macroinvertebrate" OR "coptotermes formosanus" OR "daphnia magna" OR "earthworm activity" OR "earthworm species" OR "folsomia candida" OR "formosan subterranean" OR "formosanus shiraki" OR "heterodera schachtii" OR "higher termite" OR "insect outbreak" OR "insect pests" OR "insect species" OR "invertebrate communities" OR "lower termite" OR "macroinvertebrate community" OR "matter decomposition" OR "nematode communities" OR "nematode community" OR "nematode control" OR "nematode meloidogyne" OR "nematode populations" OR "oribatid mites" OR "parasitic nematode" OR "parasitic nematodes" OR "root-knot nematode" OR "root-knot nematodes" OR "saproxylic beetle" OR "saproxylic beetles" OR "saproxylic insect" OR "saproxylic insects" OR "saproxylic species" OR "subterranean termite" OR "subterranean termites" OR "termite assemblage" OR "termite attack" OR "termite coptotermes" OR "termite feeding" OR "termite resistance" OR "termite reticulitermes" OR "termite species" OR "wood-feeding termite" OR "wood-feeding termites" OR fauna OR arthropod"*
+
+
+The search yielded 49,352 studies and after reading abstracts and titles for actual relevance and data availability, the number of studies was reduced to 481 (by excluding studies that were not mainly targeting wood decomposition) from which the full texts were read. After examining the full texts, we included the studies on WD decomposition that met the following criteria. **(i) Reported explicitly the methods used to allow or exclude invertebrate access to the WD during decomposition** **(ii) Reported changes in WD mass or density or volume through decomposition duration or associated decay rate estimates in the presence or absence of invertebrates in both inclusion or exclusion treatments.** **(iii) Reported the tree species, bark status (present or absent) and diameter of the WD used.** **(iv) Reported the duration of decomposition.**
+We ended having *20* studies that met the above criteria (see the sources section in the main text for the list of these included studies and Fig below for the meta-analysis PRISMA flow diagram). We extracted data from all the *20* articles. In total, we included *1427* paired observations with both an invertebrate inclusion and exclusion treatment at the tree species level. 
+![PRISMA flow chat for the meta-analysis](Prisma.png).
+
+We aimed at testing the following hypothesis as indicated in our hypothetical framework shown below.
+
+We hypothesize that: (i) Besides climatic contributions to the invertebrate effect on decomposition, variation in deadwood traits will constrain invertebrate effects with different effects across climatic zones (Stronger magnitude in tropical zone) (ii) the effect of invertebrates will be greater in WD with a larger diameter; (iii) bark presence will increase  the effect of invertebrates on wood decomposition; (iv) the effects of invertebrates will be greater in natural (non-processed, either with or without bark) wood than in processed wood (e.g., blocks, stakes, dowels, mostly without bark) as the latter may be perceived as novel materials; (v) the effect of invertebrates on WD decomposition will be higher in Angiosperm than in gymnosperms, as the powerful anti-herbivory defenses in gymnosperms will deter invertebrate decomposers 
+
+![hypothetical framework](graphical hypothesis.png)
+
+The sections below shows how we analysed the extracted data how we obtained/plotted all the figures and tables shown in the submitted manuscript 
+
+
+## Import the extracted data for the meta-analysis
+```{r}
+wood_meta<-read.csv("Njoroge_et_al_2023_meta.csv", header = TRUE, sep = ",", quote = "\"",
+              dec = ".", fill = TRUE, comment.char = "",fileEncoding = 'latin1')
+summary(wood_meta)
+```
+
+We have 1767 paired observations that report changes in the target variables (mass loss) in the presence or absence of invertebrates.
+
+## Data cleaning
+
+We first convert some variables to factors.
+
+```{r, warning=FALSE,results='hide'}
+wood_meta$Original_Site<-as.factor(wood_meta$Original_Site)
+wood_meta$Incubation_Site<-as.factor(wood_meta$Incubation_Site)
+wood_meta$Country<-as.factor(wood_meta$Country)
+wood_meta$lab_or_field_experiment<-as.factor(wood_meta$lab_or_field_experiment)
+wood_meta$Tree_species<-as.factor(wood_meta$Tree_species)
+wood_meta$Clade<-as.factor(wood_meta$Clade)
+wood_meta$woody_debris_type<-as.factor(wood_meta$woody_debris_type)
+wood_meta$Treatments_type<-as.factor(wood_meta$Treatments_type)
+wood_meta$Position_to_soil<-as.factor(wood_meta$Position_to_soil)
+wood_meta$Fauna_group<-as.factor(wood_meta$Fauna_group)
+wood_meta$Target_variable<-as.factor(wood_meta$Target_variable)
+wood_meta$Bark_status_presence_or_absent<-as.factor(wood_meta$Bark_status_presence_or_absent)
+wood_meta$natural_wood_or_block<-as.factor(wood_meta$natural_wood_or_block)
+wood_meta$wood_size_class<-as.factor(wood_meta$wood_size_class)
+
+levels(wood_meta$woody_debris_type)
+levels(wood_meta$lab_or_field_experiment)
+levels(wood_meta$Treatments_type)
+levels(wood_meta$Position_to_soil)
+levels(wood_meta$Target_variable)
+levels(wood_meta$Bark_status_presence_or_absent)
+levels(wood_meta$natural_wood_or_block)
+levels(wood_meta$wood_size_class)
+```
+
+We convert some variables to numeric 
+
+```{r, warning=FALSE,results='hide'}
+wood_meta$Original_Altitude.m.a.s.l..<- as.numeric(wood_meta$Original_Altitude.m.a.s.l..)
+wood_meta$Wood_density_initial<-as.numeric(wood_meta$Wood_density_initial)
+wood_meta$Wood_initial_Calcium<-as.numeric(wood_meta$Wood_initial_Calcium)
+wood_meta$Wood_initial_Carbon<-as.numeric(wood_meta$Wood_initial_Carbon)
+wood_meta$Wood_initial_Cellulose<-as.numeric(wood_meta$Wood_initial_Cellulose)
+wood_meta$Wood_initial_Hemicellulose<-as.numeric(wood_meta$Wood_initial_Hemicellulose)
+wood_meta$Wood_initial_Lignin_perc<-as.numeric(wood_meta$Wood_initial_Lignin_perc)
+wood_meta$Wood_initial_Nitrogen<-as.numeric(wood_meta$Wood_initial_Nitrogen)
+wood_meta$Wood_initial_Phophorus<-as.numeric(wood_meta$Wood_initial_Phophorus)
+wood_meta$Wood_initial_Potassium<-as.numeric(wood_meta$Wood_initial_Potassium)
+wood_meta$Study_duration_months<-as.numeric(wood_meta$Study_duration_months)
+wood_meta$n_sample_Acess<-as.numeric(wood_meta$n_sample_Acess)
+wood_meta$Target_variable_loss_Access<-as.numeric(wood_meta$Target_variable_loss_Access)
+wood_meta$Target_variable_loss_Exclusion<-as.numeric(wood_meta$Target_variable_loss_Exclusion)
+wood_meta$n_sample_Exclusion<-as.numeric(wood_meta$n_sample_Exclusion)
+wood_meta$incubation_decimal_latitudes<-as.numeric(wood_meta$incubation_decimal_latitudes)
+wood_meta$incubation_decimal_longtitude<-as.numeric(wood_meta$incubation_decimal_longtitude)
+wood_meta$incubation_site_annual_temperature<-as.numeric(wood_meta$incubation_site_annual_temperature)
+wood_meta$Incubation_annual_precipitation_.mm.<-as.numeric(wood_meta$Incubation_annual_precipitation_.mm.)
+wood_meta$Incubation_site_annual_max_temperatur_.degrees_C.<-as.numeric(wood_meta$Incubation_site_annual_max_temperatur_.degrees_C.)
+wood_meta$Incubation_site_annual_min_temperatur_.degrees_C.<-as.numeric(wood_meta$Incubation_site_annual_min_temperatur_.degrees_C.)
+wood_meta$wood_diameter<-as.numeric(wood_meta$wood_diameter)
+```
+
+# Classify the WD based on the diameter
+We classified the WD into two different sizes base on diameter. 
+
+```{r, warning=FALSE,results='hide'}
+library(dplyr)
+wood_meta<-wood_meta %>% mutate(diameter_class = case_when(wood_diameter <= 30 ~ 'small',
+              wood_diameter >= 30.1 ~ 'large',
+))
+
+
+wood_meta$diameter_class<-as.factor(wood_meta$diameter_class)
+dim(wood_meta)
+summary(wood_meta)
+```
+
+
+# Koppen-geiger climate classification
+Here we classify the regions into different climatic region based on koppen-geiger classification.
+we will use kgc package to the classification. 
+
+```{r,warning=FALSE,results='hide'}
+library(kgc)
+wood_meta2<- data.frame(wood_meta,
+                   rndCoord.lon = RoundCoordinates(wood_meta$incubation_decimal_longtitude),
+                   rndCoord.lat = RoundCoordinates(wood_meta$incubation_decimal_latitude))
+wood_meta3 <- data.frame(wood_meta2,ClimateZ=LookupCZ(wood_meta2))
+```
+
+
+Koppen-Geiger classification has five major categories and in each category there are sub categories. 
+Here, we extract the first letter representing the main category using *forstringr* package and save it into a new column(climate abb).
+
+```{r, warning=FALSE, results='hide'}
+wood_meta3$ClimateZ<-as.factor(wood_meta3$ClimateZ)
+summary(wood_meta3$ClimateZ)
+
+#devtools::install_github("gbganalyst/forstringr")
+library(forstringr)
+wood_meta3$climate_abbrev<-str_left(wood_meta3$ClimateZ, 1)
+
+wood_meta3$climate_abbrev<- as.factor(wood_meta3$climate_abbrev)
+summary(wood_meta3)
+wood_meta3$climate_zone<- with(wood_meta3, factor(climate_abbrev, 
+    levels = c('A', 'B', 'C','D'), labels = c("Tropical", "Arid", "Temperate",'Continental')))
+```
+
+We can now see that based on our coarse classifications of experimental sites based on the Koppen geiger classification we have 481 observations in tropical zone,  31 in arid zone 1085 in temperate zone and 170 in continental zone region.
+
+#Next we create a new dataframe (wood_meta_lab) with observations that report decomposition of roots
+
+```{r, warning=FALSE, results='hide'}
+wood_meta_root<- wood_meta[wood_meta$woody_debris_type == "root",]
+dim(wood_meta_root)
+```
+we have 8 paired observations reporting the decomposition of roots
+
+
+
+# Data exploration
+
+Here we construct a data frame with a summary statistics which is the number of observation per site for new wood_meta_fauna data.
+
+```{r, warning=FALSE, results='hide'}
+library(plyr)## 
+wood_meta_fauna <- wood_meta3
+df_site <- ddply(wood_meta_fauna, c("Country", "Incubation_Site","incubation_decimal_latitudes","incubation_decimal_longtitude","climate_zone"), summarise,
+                 N= length(Target_variable))
+
+dim(df_site)
+```
+
+# Geographical distribution of the sites with the paired observations
+In total we have 208 different experimental sites.
+
+Next we load libraries for plotting geographical distribution of the experimental sites.
+
+```{r, warning=FALSE, results='hide'}
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sp)
+library(rworldmap)
+library(rgeos)
+library(ggspatial)
+library(ggmap)
+#library(OpenStreetMap)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(maps)
+```
+
+## Start plotting
+```{r,warning=FALSE}
+world_map <- map_data("world")
+
+#Then, we need to create a base plot with gpplot2 package.
+df_site2<-df_site[complete.cases(df_site), ]# excludes rows with NA
+dim(df_site2)
+
+library(ggplot2)
+p <- ggplot() + coord_fixed() + xlab("") + ylab("")
+
+#Add map to base plot
+
+base_world_messy <- p + geom_polygon(data=world_map, aes(x=long, y=lat, group=group),
+                                     colour="gray90", fill="gray90")
+base_world_messy
+
+
+df_site2$climate_zone<-factor(df_site2$climate_zone,levels=c("Tropical","Arid","Temperate","Continental"))
+#Strip the map down so it looks super clean and beautiful
+cleanup <-
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = 'white', colour = 'white'),
+        axis.line = element_line(colour = "white"), legend.position="none",
+        axis.ticks=element_blank(), axis.text.x=element_blank(),
+        axis.text.y=element_blank())
+base_world <- base_world_messy + cleanup
+base_world
+
+p<- base_world +
+  geom_point(data=df_site2,  aes(y=incubation_decimal_latitudes, x=incubation_decimal_longtitude,color=climate_zone),
+             size=2.5, alpha=I(0.5))  
+
+
+
+p<- p+ theme(legend.position="bottom", legend.box = "vertical") +
+  theme(legend.justification = "left")+
+  labs(color="Climate zone")+
+  theme(legend.title.align = -2) + theme(legend.background = element_rect(fill = "white"),
+                                         legend.key = element_rect(fill = "white", color = NA))+
+  guides(color=guide_legend(title.hjust=0.5))
+figure1<- p+theme(legend.title = element_text(face = "bold",size = 12))+ theme(legend.text=element_text(size=11))
+figure1
+path<- getwd()
+ggsave(filename="Geographical_distribution.png", plot=figure1, device="png",
+       path=path, height=5, width=7, units="in", dpi=500)
+```
+
+For us to do a weighted log response ratio meta-analysis, we need the changes in the target variable for both treatments (in our case decomposition in presence of soil fauna) and control (in our case decomposition in the absence of soil fauna) together with their standard deviations. However, some studies did not report standard deviations or other statistics that could help us estimate the standard deviation. Therefore in the next step we exclude the observations that did not include standard deviations.
+
+```{r, warning=FALSE}
+library(dplyr)
+wood_meta_fauna$sd_exclusion<-as.numeric(wood_meta_fauna$sd_exclusion)
+wood_meta_fauna$sd_inclusion<-as.numeric(wood_meta_fauna$sd_inclusion)
+
+dim(wood_meta_fauna)
+wood_meta_fauna<- wood_meta_fauna %>% filter_at(vars(sd_exclusion,sd_inclusion),all_vars(!is.na(.)))
+dim(wood_meta_fauna)
+```
+
+After  excluding observations that did not report standard deviations, we now have 1547 paired observations.
+ 
+Some studies have negative mass loss and this is going to be problematic when calculating the log response ratio which does not allow negative values. We therefore exclude observations with negative mass loss in the next step
+
+```{r, warning=FALSE}
+wood_meta_fauna <- wood_meta_fauna[wood_meta_fauna$Target_variable_loss_Exclusion >= 0, ]
+dim(wood_meta_fauna)
+wood_meta_fauna <- wood_meta_fauna[wood_meta_fauna$Target_variable_loss_Access >= 0, ]
+dim(wood_meta_fauna)
+```
+
+After removing the negative mass loss we have 1429 paired observations. Now we can proceed with the effect size calculation fr our meta-analysis.
+
+## Include standardized climatic variables (temperature and precipitation) in our dataset.
+
+In as much as we managed to extract the temperature and precipitation data from the studies, a number of studies did not report the sites precipitation and temperature. To get the standardized values for temperature and precipitation, firstly, we extract the data from **worldclim** using **raster package** since we have the geographical coordinates of the incubation sites. 
+*https://www.gis-blog.com/r-raster-data-acquisition/*.
+
+
+```{r,warning=FALSE}
+library(raster)
+```
+First we create a data frame with sites and their geographical coordinates.  
+
+```{r, warning=FALSE}
+sites <- data.frame(site= wood_meta_fauna$Incubation_Site, long=wood_meta_fauna$incubation_decimal_longtitude, lat=wood_meta_fauna$incubation_decimal_latitudes)
+```
+
+Secondly, we now extract the precipitation and temperature data using the **getData function**. This was supposed to be automated from the worldclim website which first should enable downloading the file but since the underlying website [] runs slow or even most of time crashed, we downloaded the bioclimatic climate prior to to this. 
+Remember that after downloading the needed .zip file, you need to unzip in your working directory and rename the unzipped file (in our case we name it wc2-5, meaning we downloaded worldclim data with 2.5 m resolution). If you downloaded the file yourself, then rember to add the "download = F".
+
+```{r, warning=FALSE}
+#r2 <- raster::getData("worldclim", var="bio", res=2.5)
+options(timeout = 600)
+r2 <- raster::getData("worldclim", var="bio", res=2.5, download = F)
+```
+
+We need to select the required layers. 
+We are looking for layers 1 and 12, they stand respectively for mean annual temperature (C*10) and precipitation (mm).For temperature we have to divide by 10 to get the actual temperature in degrees Celsius. 
+
+```{r, warning=FALSE}
+r2 <- r2[[c(1, 12)]] 
+names(r2) <- c("Tmean", "Precip")
+```
+
+Now putting our coordinates into the format r::raster likes
+
+```{r, warning=FALSE}
+points <- SpatialPoints(sites[,2:3], proj4string = r2@crs)
+```
+
+Next we extracting the values for our sites coordinates using the function **extract** from raster package
+
+```{r, warning=FALSE}
+cc <- extract(r2, points)
+```
+
+Now bind the new temperature and precipitation values to the wood_meta_fauna data frame 
+
+```{r, warning=FALSE,results='hide'}
+wood_meta_fauna <- cbind.data.frame(wood_meta_fauna, cc)
+wood_meta_fauna$temperature<- wood_meta_fauna$Tmean/10
+print(wood_meta_fauna)
+```
+
+
+## Calculate size effects
+
+We will use the log response ratio (LRR = log (Treatment/Control)) as our size effect (‘ROM’ in Metafor) in our case the treatment is wood decomposition in soil fauna invertebrates presence and control is wood decomposition in soil invertebrates absence. To do this, we use **escalc** function from **metafor** package. 
+
+```{r, warning=FALSE,results='hold'}
+library(metafor)
+
+lnRR <- escalc(measure = "ROM", n2i = n_sample_Exclusion, n1i = n_sample_Acess, m2i = Target_variable_loss_Exclusion, 
+               m1i = Target_variable_loss_Access, sd2i = sd_exclusion, sd1i = sd_inclusion, append=FALSE,data=wood_meta_fauna)
+dim(lnRR)
+
+```
+
+Next after calculating the lnRR, we need to bind it to our wood_meta_fauna data frame. To do so, we will use **bind_cols** function 
+
+## Bind lnRR to wood_meta-fauna_data
+
+```{r, warning=FALSE}
+wood_meta_fauna <- bind_cols(wood_meta_fauna, lnRR)
+dim(wood_meta_fauna)
+```
+
+Two rows have mass loss equals to 0 for the WD in the absence of invertebrates. We therefore have 2 Na in the yi column after calculating the lnRR. When calculating the effect size using the random effect  model the Nas are omitted and therefore we ended up with 1427 observations.  
+
+Next we can calculate the overall effect size using a random effect model.
+
+## Random effect model
+Here we fit a random effect model with **rma** function to estimate the effect size.We use the random effect model to avoid pseudo replications and also because random effect model accounts for independence in the data. The random- effects model uses the inverse of within- studies and between- studies variance to weight the true effect sizes, and it accounts for auto correlations in observations within each study (Zhang et al., 2018). The difference between WD decomposing in the presence or absence of soil invertebrates will be considered significant if the 95% confidence interval does not overlap with zero.
+
+```{r, warning=FALSE}
+random_m <- rma(yi = yi, vi = vi, method = "REML", data = wood_meta_fauna)
+summary(random_m)
+
+```
+```{r, warning=FALSE}
+exp(0.2569)
+```
+
+Since this is a ratio, if there is no difference between WD decomposing in presence of soil invertebrates and WD decomposing in the absence of soil invertebrates the  ratio should be 1. Values above one imply that inclusion of soil invertebrates increase WD decomposition and values below 1 indicate that soil invertebrates inclusion reduces the rate of WD decomposition. 
+From our results the estimate effect size of our meta-analysis is significant. This means there is a significant difference in decomposition rate when wood decomposes in the presence or absence of soil invertebrates. From the random effect model we can see that the inclusion of soil invertebrates increases wood decomposition during decomposition with around **29 percent**. Please check the multivariate analysis section to see how we got the **40 percent** reported in our manuscript.
+
+### Check for publication bias using funnel plots
+
+To visually check for publication bias, we plot a funnel plot using the inbuilt **funnel** function in metafor.
+In the absence of publication bias, the studies should be evenly distributed and the funnel should be symmetrical. If the studies are skewed to the right, this would mean that more studies reported positive effect of soil invertebrates on WD decomposition implying that studies on the negative effect of soil invertebrates are often not reported. If the studies are skewed to the left then it means that more studies reported negative effect of soil invertebrates on WD decomposition and positive effects of soil invertebrates on WD decomposition is often not reported. 
+
+```{r}
+funnel(random_m,ylim=c(.00001,9))
+```
+
+### Plot a contour funnel plot instead
+
+```{r}
+funnel(wood_meta_fauna$yi, wood_meta_fauna$vi, yaxis="seinv",
+       xlim=c(-4,4), ylim=c(.00001,30), xaxs="i", yaxs="i", las=1,
+       level=c(.10, .05, .01), shade=c("white", "gray55", "gray75"),
+       text.font = 3,back="gray90", ylab="Precision (1/se)", xlab= "Efffect size [ln(RR)]")
+legend("topright", legend= c("0.10 < P ≤ 1.00 ", "0.05 < P ≤ 0.10", "0.05 < P ≤ 0.01", "0.00 < P ≤ 0.01"),text.font = 3, bg= "white",fill = c("white", "gray55", "gray75", "gray90"))
+
+```
+
+There is some little asymmetry in the funnel since some studies seems to be missing on the left side of the funnel. This could be a result of having few observations on the negative effect of soil invertebrates on wood decomposition. Therefore, we need to consider if this bias can affect our conclusion by calculating the Rosenberg fail test number. 
+
+### Rosenberg fail safe
+To calculate the Rosenberg fail test number we use the inbuilt **fsn** function from metafor package.Rosenberg fail- safe number  (Rosenberg, 2005), gives an estimate of the potential non- significant studies that need to be added to change our conclusion.
+
+```{r, warning=FALSE}
+fsn(yi, vi, data=wood_meta_fauna, type="Rosenberg")
+fsn(yi, vi, data=wood_meta_fauna, type="Rosenthal")
+```
+The fail safe test number recommended threshold is **5k + 10** where k is the total number of observations (Rosenthal, 1979). In our case the number is **11325710** which is much greater than the recommended threshold. Therefore we can have confidence in our estimated effect size since its greater than the recommended threshold. 
+
+
+# Effect of soil invertebrates on WD decomposition under different subsets of the data.
+
+Next we want to see how the effect size varies under different subset of our data based on our hypotheses. Here we are interested to see whether soil invertebrate effect varies with; **(i) the bark status of the WD (ii) Climate zones  (iii) Clades (gymnosperms/Angiosperm) (iv) Natural WD and wood blocks (v) WD diameter**
+
+## Effect size based on bark status
+
+See how the effect of soil on invertebrates on wood decomposition vary with the presence or absence of bark in the wood
+```{r, warning=FALSE}
+res.m <- rma(yi, vi, data = wood_meta_fauna, subset = (Bark_status_presence_or_absent=="present"))
+res.n <- rma(yi, vi, data = wood_meta_fauna, subset = (Bark_status_presence_or_absent=="absent"))
+res.m
+res.n
+```
+
+Visual presentation of the results using ggplot
+
+```{r, warning=FALSE}
+dat <- data.frame(
+  label = c("Bark     (769)
+  present            ", "Bark     (658)
+  absent             ", "Overall    (1427)"),
+  point_est = c(0.0968,0.4405, 0.2569),
+  lb_ci = c(0.0711,0.3813, 0.2244),
+  ub_ci = c(0.1225,0.4996, 0.2893),
+  group = c(1,2,3))
+#require(dplyr)
+#dat<- dat %>% mutate(label = factor(label), 
+ #             label = factor(label, levels = rev(levels(label))))
+dat$label <- factor(dat$label, levels = dat$label)
+plot1 <- ggplot(dat, aes(x=point_est, y=label))  +scale_x_continuous(limits = c(-0.1,1.3))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat$label)))+ geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) + theme(legend.position="none") +ggtitle("B")+
+  ylab("Bark status") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot1
+path<- getwd()
+ggsave(filename="bark status.png", plot=plot1, device="png",
+       path=path, height=5, width=7, units="in", dpi=500)
+
+```
+
+Soil invertebrates have higher effect on wood without bark, probably because most studies have reported the effect of termites. Also studies without bark are fewer. 
+
+## Climate  zone
+
+See how the effect of soil on invertebrates on wood decomposition vary with the climatic region
+
+```{r, warning=FALSE}
+resA <- rma(yi, vi, data=wood_meta_fauna, subset=climate_zone=="Tropical")
+resB <- rma(yi, vi, data=wood_meta_fauna, subset=climate_zone=="Arid")
+resC <- rma(yi, vi, data=wood_meta_fauna, subset=climate_zone=="Temperate")
+resD <- rma(yi, vi, data=wood_meta_fauna, subset=climate_zone=="Continental")
+resA
+resB
+resC
+resD
+```
+
+Visual presentation of the results using ggplot 
+
+```{r, warning=FALSE}
+dat2 <- data.frame(
+  label = c("Continental  (111)","Temperate  (872)", "Arid  (24)", "Tropical  (420)","Overall  (1427)"),
+  point_est = c(0.0199,0.1242, 0.7977,0.5602, 0.2569 ),
+  lb_ci = c(-0.0560,0.0911,0.3086, 0.4894 , 0.2244),
+  ub_ci = c( 0.0959, 0.1573,1.2869, 0.6309, 0.2893 ),
+  group = c(1,2,3,4,5))
+#require(dplyr)
+#dat<- dat %>% mutate(label = factor(label), 
+ #             label = factor(label, levels = rev(levels(label))))
+dat2$label <- factor(dat2$label, levels = dat2$label)
+plot2 <- ggplot(dat2, aes(x=point_est, y=label))  +scale_x_continuous(limits = c(-0.1,1.3))+ 
+  geom_point(size=4.8) + scale_y_discrete(limits = rev(levels(dat2$label)))+ geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) + theme(legend.position="none") + ggtitle("A")+
+  ylab("Climate zones") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot2
+path<- getwd()
+ggsave(filename="climatic regions.png", plot=plot2, device="png",
+       path=path, height=5, width=7, units="in", dpi=500)
+```
+
+
+The effect of  invertebrates on wood decomposition decreases from tropical to continental climate zones.This could be explained by the abundance and distribution of termites which are likely to follow the same trend. 
+
+
+## Clades
+
+```{r, warning=FALSE}
+res.angio <- rma(yi, vi, data=wood_meta_fauna, subset=Clade=="angiosperm")
+res.gymn <- rma(yi, vi, data=wood_meta_fauna, subset=Clade=="gymnosperm")
+res.angio
+res.gymn
+```
+
+Visual presentation of the results using ggplot
+
+```{r, warning=FALSE}
+dat3 <- data.frame(
+  label = c("Gymnosperm     (659)", "Angiosperm     (768)", "Overall    (1427)"),
+  point_est = c(0.2323, 0.2748, 0.2569),
+  lb_ci = c(0.1814,0.2343, 0.2244),
+  ub_ci = c(0.2832,0.3152, 0.2893),
+  group = c(1,2,3))
+#require(dplyr)
+#dat<- dat %>% mutate(label = factor(label), 
+ #             label = factor(label, levels = rev(levels(label))))
+dat3$label <- factor(dat3$label, levels = dat3$label)
+plot3 <- ggplot(dat3, aes(x=point_est, y=label))  +scale_x_continuous(limits = c(-0.1,1.3))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat3$label)))+ geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) + theme(legend.position="none") + ggtitle("D")+
+  ylab("Clade") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot3
+path<- getwd()
+ggsave(filename="clade.png", plot=plot3, device="png",
+       path=path, height=5, width=7, units="in", dpi=500)
+```
+
+
+The magnitude of  invertebrates contribution wood decomposition is greater in Angiosperm than in gymnosperms. 
+
+## Natural *vs.* Blocks
+
+```{r, warning=FALSE, results='hold'}
+res.block <- rma(yi, vi, data=wood_meta_fauna, subset=natural_wood_or_block=="block")
+res.natural <- rma(yi, vi, data=wood_meta_fauna, subset=natural_wood_or_block=="natural")
+res.block 
+res.natural
+```
+
+Visual presentation of the results using ggplot
+
+```{r, warning=FALSE}
+dat4 <- data.frame(
+  label = c("Processed WD     (527)", "Natural WD    (900)", "Overall    (1427)"),
+  point_est = c( 0.2541, 0.2512, 0.2569),
+  lb_ci = c(0.1957,0.2144, 0.2244),
+  ub_ci = c(0.3125,0.2881, 0.2893),
+  group = c(1,2,3))
+#require(dplyr)
+#dat<- dat %>% mutate(label = factor(label), 
+ #             label = factor(label, levels = rev(levels(label))))
+dat4$label <- factor(dat4$label, levels = dat4$label)
+plot4 <- ggplot(dat4, aes(x=point_est, y=label))  +scale_x_continuous(limits = c(-0.1,1.3))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat4$label)))+ geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) + theme(legend.position="none") + ggtitle("C")+
+  ylab("Wood type") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot4
+path<- getwd()
+ggsave(filename="block_natural.png", plot=plot4, device="png",
+       path=path, height=5, width=7, units="in", dpi=500)
+
+```
+
+Let's combine the figures into one with different panels
+
+```{r, warning=FALSE}
+library(patchwork)
+fig1<- plot2 + plot1 + plot4+ plot3
+fig1
+ggsave(filename="fig1.png", plot=fig1, device="png",
+       path=path, height=8, width=12, units="in", dpi=500)
+```
+```{r}
+res.small <- rma(yi, vi, data = wood_meta_fauna, subset = (diameter_class=="small"))
+#res.medium <- rma(yi, vi, data = wood_meta_fauna, subset = (diameter_class=="medium"))
+res.large <- rma(yi, vi, data = wood_meta_fauna, subset = (diameter_class=="large"))
+res.small
+#res.medium
+res.large
+```
+
+```{r,warning=FALSE}
+dat4b <- data.frame(
+  label = c("Smaller (≤ 3 cm) diameter WD  (732)", "Larger (> 3 cm) diameter WD (695)", "Overall  (1427)"),
+  point_est = c(  0.1529, 0.3714,0.2569),
+  lb_ci = c(0.1143,0.3193,0.2244),
+  ub_ci = c(0.1915,0.4234,0.2893),
+  group = c(1,2,3))
+
+dat4b$label <- factor(dat4b$label, levels = dat4b$label)
+plot4b <- ggplot(dat4b, aes(x=point_est, y=label))  + scale_x_continuous(limits = c(-0.25,1.1))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat4b$label)))+ geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) + theme(legend.position="none") + ggtitle("A")+
+  ylab("Wood debris size") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot4b
+```
+
+```{r}
+ggsave(filename="diameter_overall.png", plot=plot4b, device="png",
+       path=path, height=5, width=7, units="in", dpi=500)
+```
+
+Create new dataframes based on the WD size.
+
+```{r}
+small<- wood_meta_fauna[wood_meta_fauna$diameter_class == "small", ]
+large<- wood_meta_fauna[wood_meta_fauna$diameter_class == "large", ]
+dim(small)
+dim(large)
+```
+```{r,warning=FALSE}
+sm<- rma(yi = yi, vi = vi, method = "REML", data = small)
+summary(sm)
+lar <- rma(yi = yi, vi = vi, method = "REML", data = large)
+summary(lar)
+```
+
+```{r,warning=FALSE}
+sm_bark<-rma(yi, vi, data = small, subset = (Bark_status_presence_or_absent=="present"))
+lar_bark<-rma(yi, vi, data = large, subset = (Bark_status_presence_or_absent=="present"))
+sm_bark
+lar_bark
+
+sm_bark_none<-rma(yi, vi, data = small, subset = (Bark_status_presence_or_absent=="absent"))
+lar_bark_none<-rma(yi, vi, data = large, subset = (Bark_status_presence_or_absent=="absent"))
+
+sm_bark_none
+lar_bark_none
+```
+
+
+```{r,warning=FALSE}
+dat9b <- data.frame(
+  label = c("Smaller (<= 3cm) diameter WD (732)","Bark present (632)", "Bark  absent (100) ",
+           "Larger (> 3cm) diameter WD (695)","Bark  present (137)","Bark  absent (558) "),
+  point_est = c(0.1529, 0.0703, 0.6069, 0.3714,0.2209, 0.4101 ),
+  lb_ci = c(0.1143, 0.0423,0.4447,0.3193,0.1620,0.3472),
+  ub_ci = c( 0.1915,0.0984,0.7692,0.4234,0.2798,0.4730),
+  group = c(1,2,3,1,2,3),
+  region= c(1,1,1,2,2,2)
+)
+dat9b$label <- factor(dat9b$label, levels = dat9b$label)
+as.factor(dat9b$group)
+plot9b <- ggplot(dat9b, aes(x=point_est, y=label, shape=as.factor(group),color=as.factor(region))) +scale_shape_manual(values = c(10, 16, 17))+
+  theme(legend.position="none") +scale_color_brewer(palette="Dark2")+scale_x_continuous(limits = c(-0.25,1.1))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat9b$label))) + geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_hline(yintercept = c(3.5),color="black", linetype="dashed", alpha=.7)+
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) +
+  ggtitle("B")+
+  ylab("WD size and Bark status") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot9b
+```
+
+
+```{r,warning=FALSE}
+sm_trp<-rma(yi, vi, data = small, subset = (climate_zone=="Tropical"))
+lar_trp<-rma(yi, vi, data = large, subset = (climate_zone=="Tropical"))
+sm_trp
+lar_trp
+
+#sm_ard<-rma(yi, vi, data = small, subset = (climate_zone=="Arid"))
+lar_ard<-rma(yi, vi, data = large, subset = (climate_zone=="Arid"))
+#sm_ard
+lar_ard
+
+sm_temp<-rma(yi, vi, data = small, subset = (climate_zone=="Temperate"))
+lar_temp<-rma(yi, vi, data = large, subset = (climate_zone=="Temperate"))
+sm_temp
+lar_temp
+sm_cont<-rma(yi, vi, data = small, subset = (climate_zone=="Continental"))
+lar_cont<-rma(yi, vi, data = large, subset = (climate_zone=="Continental"))
+sm_cont
+lar_cont
+```
+
+Plot wood debris size across different Climate  zone 
+
+```{r,warning=FALSE}
+dat10b <- data.frame(
+  label = c("Smaller (≤ 3 cm) diameter WD (732)","Boreal (93)", "Temperate (136) ","Subtropic (312)","Tropics (191) ",
+           "Larger  (> 3 cm) diameter WD (695)","Temperate (146)","Subtropic (215)","Tropics (320) "),
+  point_est = c(0.1529,0.0463,0.0097,0.2045,0.1714,0.3714, -0.0488,0.2205,0.6979),
+  lb_ci = c(0.1143,-0.0196, -0.0632,0.1364, 0.1175,0.3193,-0.0892,0.1621,0.6061),
+  ub_ci = c( 0.1915,0.1121,0.0827,0.2726,0.2253,0.4234,-0.0083,0.2790,0.7896),
+  group = c(1,2,3,4,5,1,3,4,5),
+  region= c(1,1,1,1,1,2,2,2,2)
+)
+dat10b$label <- factor(dat10b$label, levels = dat10b$label)
+as.factor(dat9b$group)
+plot10b <- ggplot(dat10b, aes(x=point_est, y=label, shape=as.factor(group),color=as.factor(region))) +scale_shape_manual(values = c(10, 16, 17, 22, 15))+
+  theme(legend.position="none") +scale_color_brewer(palette="Dark2")+scale_x_continuous(limits = c(-0.25,1.1))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat10b$label))) + geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_hline(yintercept = c(4.5),color="black", linetype="dashed", alpha=.7)+
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) +
+  ggtitle("A")+
+  ylab("WD size and climatic regions") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot10b
+```
+
+Natural WD *vs.* processed WD 
+
+```{r,warning=FALSE}
+sm_block<-rma(yi, vi, data = small, subset = (natural_wood_or_block=="block"))
+lar_block<-rma(yi, vi, data = large, subset = (natural_wood_or_block=="block"))
+sm_block
+lar_block
+
+sm_natural<-rma(yi, vi, data = small, subset = (natural_wood_or_block=="natural"))
+lar_natural<-rma(yi, vi, data = large, subset = (natural_wood_or_block=="natural"))
+sm_natural
+lar_natural
+```
+
+```{r,warning=FALSE}
+dat11b <- data.frame(
+  label = c("Smaller (≤ 3 cm) diameter WD (732)","Processed WD (91)", "Natural WD (641) ",
+           "Larger (> 3 cm) diameter WD (695)","Processed WD (436)","Natural WD (259) "),
+  point_est = c(0.1529,0.6960,0.0655, 0.3714,0.1653,0.7644 ),
+  lb_ci = c(0.1143,0.5258,0.0379,0.3193,0.1082,0.6774 ),
+  ub_ci = c( 0.1915,0.8662,.0932,0.4234,0.2225,0.8515),
+  group = c(1,2,3,1,2,3),
+  region= c(1,1,1,2,2,2)
+)
+dat11b$label <- factor(dat11b$label, levels = dat11b$label)
+as.factor(dat9b$group)
+plot11b <- ggplot(dat11b, aes(x=point_est, y=label, shape=as.factor(group),color=as.factor(region))) +scale_shape_manual(values = c(10, 16, 17))+
+  theme(legend.position="none") +scale_color_brewer(palette="Dark2")+scale_x_continuous(limits = c(-0.25,1.1))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat11b$label))) + geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_hline(yintercept = c(3.5),color="black", linetype="dashed", alpha=.7)+
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) +
+  ggtitle("C")+
+  ylab("WD size and WD type") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot11b
+```
+
+```{r,warning=FALSE}
+sm_gymn<-rma(yi, vi, data = small, subset = (Clade=="gymnosperm"))
+lar_gymn<-rma(yi, vi, data = large, subset = (Clade=="gymnosperm"))
+sm_gymn
+lar_gymn
+
+sm_angio<-rma(yi, vi, data = small, subset = (Clade=="angiosperm"))
+lar_angio<-rma(yi, vi, data = large, subset = (Clade=="angiosperm"))
+sm_angio
+lar_angio
+```
+
+```{r,warning=FALSE}
+dat12b <- data.frame(
+  label = c("Smaller ( ≤ 3 cm) diameter WD (732)","Gymnosperm (139)", "Angiosperm (593) ",
+           "Larger (> 3 cm) diameter WD  (695)","Gymnosperm (520)","Angiosperm (175) "),
+  point_est = c(0.1529, 0.3444,0.1021, 0.3714, 0.2006,0.9095),
+  lb_ci = c(0.1143, 0.2079,0.0713,0.3193,0.1479,0.8052),
+  ub_ci = c( 0.1915,0.4809,0.1329,0.4234,0.2534, 1.0138 ),
+  group = c(1,2,3,1,2,3),
+  region= c(1,1,1,2,2,2)
+)
+dat12b$label <- factor(dat12b$label, levels = dat12b$label)
+as.factor(dat9b$group)
+plot12b <- ggplot(dat12b, aes(x=point_est, y=label, shape=as.factor(group),color=as.factor(region))) +scale_shape_manual(values = c(10, 16, 17))+
+  theme(legend.position="none") +scale_color_brewer(palette="Dark2")+scale_x_continuous(limits = c(-0.25,1.1))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat12b$label))) + geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_hline(yintercept = c(3.5),color="black", linetype="dashed", alpha=.7)+
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) +
+  ggtitle("D")+
+  ylab("WD size and WD clade") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot12b
+```
+```{r,warning=FALSE}
+library(patchwork)
+fig_diameter<-  plot4b +plot9b+plot11b+plot12b
+fig_diameter
+ggsave(filename="diameter.png", plot=fig_diameter, device="png",
+       path=path, height=8, width=12, units="in", dpi=500)
+```
+
+
+```{r,warning=FALSE}
+tropical<- wood_meta_fauna[wood_meta_fauna$climate_zone == "Tropical", ]
+arid<- wood_meta_fauna[wood_meta_fauna$climate_zone == "Arid", ]
+temperate<- wood_meta_fauna[wood_meta_fauna$climate_zone == "Temperate", ]
+continental<- wood_meta_fauna[wood_meta_fauna$climate_zone == "Continental", ]
+dim(tropical)
+dim(arid)
+dim(temperate)
+dim(continental)
+```
+
+
+
+```{r,warning=FALSE}
+#tropical regions
+trop <- rma(yi = yi, vi = vi, method = "REML", data = tropical)
+summary(trop)
+#arid regions
+ard <- rma(yi = yi, vi = vi, method = "REML", data = arid)
+summary(ard)
+#temperate region
+temp <- rma(yi = yi, vi = vi, method = "REML", data = temperate)
+summary(temp)
+#Continental
+cont <- rma(yi = yi, vi = vi, method = "REML", data = continental)
+summary(cont)
+```
+```{r,warning=FALSE}
+tr_bark<-rma(yi, vi, data = tropical, subset = (Bark_status_presence_or_absent=="present"))
+#ard_bark<-rma(yi, vi, data = arid, subset = (Bark_status_presence_or_absent=="present"))
+temp_bark<-rma(yi, vi, data = temperate, subset = (Bark_status_presence_or_absent=="present"))
+cont_bark<-rma(yi, vi, data = continental, subset = (Bark_status_presence_or_absent=="present"))
+tr_bark
+#ard_bark
+temp_bark
+cont_bark
+tr_bark_none<-rma(yi, vi, data = tropical, subset = (Bark_status_presence_or_absent=="absent"))
+ard_bark_none<-rma(yi, vi, data = arid, subset = (Bark_status_presence_or_absent=="absent"))
+temp_bark_none<-rma(yi, vi, data = temperate, subset = (Bark_status_presence_or_absent=="absent"))
+cont_bark_none<-rma(yi, vi, data = continental, subset = (Bark_status_presence_or_absent=="absent"))
+tr_bark_none
+ard_bark_none
+temp_bark_none
+cont_bark_none
+```
+
+```{r,warning=FALSE}
+dat9 <- data.frame(
+  label = c("Tropical (420)","Bark present (179)", "Bark  absent (241)","Arid (24)",
+            "Bark  absent (24)", "Temperate (872)","Bark  present (505)","Bark  absent (367)","Continental (111)", "Bark present (85)", "Bark absent (26)"),
+  point_est = c(0.5602, 0.1942,0.8618,0.7977,0.7977,0.1242,0.0576,0.1784,0.0199,-0.0060,0.1045   ),
+  lb_ci = c( 0.4894,0.1353,0.7571,0.3086,0.3086,0.0911,0.0317,0.1170,-0.0560,-0.0941,-0.0581  ),
+  ub_ci = c(0.6309,0.2532,0.9664,1.2869,1.2869,0.1573,0.0835,0.2398,0.0959,0.0821,0.2671   ),
+  group = c(1,2,3,1,3,1,2,3,1,2,3),
+  region= c(1,1,1,2,2,3,3,3,4,4,4)
+)
+dat9$label <- factor(dat9$label, levels = dat9$label)
+as.factor(dat9$group)
+plot9 <- ggplot(dat9, aes(x=point_est, y=label, shape=as.factor(group),color=as.factor(region))) +scale_shape_manual(values = c(10, 16, 17))+
+  theme(legend.position="none") +scale_color_brewer(palette="Dark2")+scale_x_continuous(limits = c(-0.1,1.3))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat9$label))) + geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_hline(yintercept = c(3.5,6.5,8.5),color="black", linetype="dashed", alpha=.7)+
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) +
+  ggtitle("B")+
+  ylab("Climate zones and Bark status") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot9
+```
+
+```{r,warning=FALSE}
+tr_gymn<-rma(yi, vi, data = tropical, subset = (Clade=="gymnosperm"))
+ard_gymn<-rma(yi, vi, data = arid, subset = (Clade=="gymnosperm"))
+temp_gymn<-rma(yi, vi, data = temperate, subset = (Clade=="gymnosperm"))
+cont_gymn<-rma(yi, vi, data = continental, subset = (Clade=="gymnosperm"))
+tr_gymn
+ard_gymn
+temp_gymn
+cont_gymn
+tr_angi<-rma(yi, vi, data = tropical, subset = (Clade=="angiosperm"))
+#ard_angi<-rma(yi, vi, data = arid, subset = (Clade=="angiosperm"))
+temp_angi<-rma(yi, vi, data = temperate, subset = (Clade=="angiosperm"))
+cont_angi<-rma(yi, vi, data = continental, subset = (Clade=="angiosperm"))
+tr_angi
+#ard_angi
+temp_angi
+cont_angi
+```
+
+```{r,warning=FALSE}
+dat10 <- data.frame(
+  label = c("Tropical (420)","Gymnosperm (128)", "Angiosperm (292)","Arid (24)","Gymnosperm (24)",
+             "Temperate (872)","Gymnosperm (450)","Angiosperm (422)","Continental (111)", "Gymnosperm (57)", "Angiosperm (54)"),
+  point_est = c(0.5602,0.5133,0.5791,0.7977,0.7977,  0.1242, 0.1537,0.0840,0.0199,0.0060,0.0382 ),
+  lb_ci = c(0.4894,0.3710,0.4991, 0.3086,0.3086,0.0911,0.1003,0.0509,-0.0560, -0.0647,-0.1429 ),
+  ub_ci = c(0.6309,0.6556,0.6590,1.2869,1.2869,0.1573,0.2071,0.1171,0.0959,0.0768,0.2194 ),
+  group = c(1,2,3,1,2,1,2,3,1,2,3),
+  region= c(1,1,1,2,2,3,3,3,4,4,4)
+)
+dat10$label <- factor(dat10$label, levels = dat10$label)
+as.factor(dat10$group)
+plot10 <- ggplot(dat10, aes(x=point_est, y=label, shape=as.factor(group),color=as.factor(region))) +scale_shape_manual(values = c(10, 16, 17))+
+  theme(legend.position="none") +scale_color_brewer(palette="Dark2")+scale_x_continuous(limits = c(-0.2,1.3))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat10$label))) + geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_hline(yintercept = c(3.5,6.5,8.5),color="black", linetype="dashed", alpha=.7)+
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) +
+  ggtitle("D")+
+  ylab("Climate zones and Clade") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot10
+```
+```{r,warning=FALSE}
+tr_natural<-rma(yi, vi, data = tropical, subset = (natural_wood_or_block=="natural"))
+#ard_natural<-rma(yi, vi, data = arid, subset = (natural_wood_or_block=="natural"))
+temp_natural<-rma(yi, vi, data = temperate, subset = (natural_wood_or_block=="natural"))
+cont_natural<-rma(yi, vi, data = continental, subset = (natural_wood_or_block=="natural"))
+tr_natural
+#ard_natural
+temp_natural
+cont_natural
+tr_blocks<-rma(yi, vi, data = tropical, subset = (natural_wood_or_block=="block"))
+ard_blocks<-rma(yi, vi, data = arid, subset = (natural_wood_or_block=="block"))
+temp_blocks<-rma(yi, vi, data = temperate, subset = (natural_wood_or_block=="block"))
+cont_blocks<-rma(yi, vi, data = continental, subset = (natural_wood_or_block=="block"))
+tr_blocks
+ard_blocks
+temp_blocks
+cont_blocks
+```
+
+```{r,warning=FALSE}
+dat11 <- data.frame(
+  label = c("Tropics (420)","Natural WD (299)", "Processed WD (121)","Arid (24)",
+            "Processed WD (24)", "Temperate (872)","Natural WD (516)","Processed WD (356)","Continental (111)", "Natural WD (85)", "Processed WD (26)"),
+  point_est = c(0.5602,0.6397,0.3690, 0.7977,0.7977, 0.1242,0.0514, 0.1879,  0.0199,-0.0060, 0.1045),
+  lb_ci = c(0.4894,0.5579,0.2353,0.3086,0.3086,0.0911,0.0261,0.1248,-0.0560,-0.0941,-0.0581),
+  ub_ci = c(0.6309,0.7216,0.5028,1.2869,1.2869,0.1573,0.0768,0.2510,0.0959,0.0821,0.2671 ),
+  group = c(1,2,3,1,3,1,2,3,1,2,3),
+  region= c(1,1,1,2,2,3,3,3,4,4,4)
+)
+dat11$label <- factor(dat11$label, levels = dat11$label)
+as.factor(dat11$group)
+plot11 <- ggplot(dat11, aes(x=point_est, y=label, shape=as.factor(group),color=as.factor(region))) +scale_shape_manual(values = c(10, 16, 17))+
+  theme(legend.position="none") +scale_color_brewer(palette="Dark2")+scale_x_continuous(limits = c(-0.2,1.3))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat11$label))) + geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_hline(yintercept = c(3.5,6.5,8.5),color="black", linetype="dashed", alpha=.7)+
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) +
+  ggtitle("C")+
+  ylab("Climate zones and WD type") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot11
+```
+
+```{r,warning=FALSE}
+tr_sm<-rma(yi, vi, data = tropical, subset = (diameter_class=="small"))
+#ard_sm<-rma(yi, vi, data = arid, subset = (diameter_class=="small"))
+temp_sm<-rma(yi, vi, data = temperate, subset = (diameter_class=="small"))
+cont_sm<-rma(yi, vi, data = continental, subset = (diameter_class=="small"))
+tr_sm
+#ard_sm
+temp_sm
+cont_sm
+tr_lar<-rma(yi, vi, data = tropical, subset = (diameter_class=="large"))
+ard_lar<-rma(yi, vi, data = arid, subset = (diameter_class=="large"))
+temp_lar<-rma(yi, vi, data = temperate, subset = (diameter_class=="large"))
+cont_lar<-rma(yi, vi, data = continental, subset = (diameter_class=="large"))
+tr_lar
+ard_lar
+temp_lar
+cont_lar
+```
+
+
+
+```{r,warning=FALSE}
+dat13 <- data.frame(
+  label = c("Tropical (420)","Smaller (≤ 3 cm) diameter WD (175)", "Larger (> 3 cm) diameter WD (245)","Arid (24)",
+            "Larger (> 3 cm) diameter WD (24)", "Temperate (872)","Smaller (≤ 3 cm) diameter WD (459)","Larger (> 3 cm) diameter WD (413)","Continental (111)", "Smaller (≤ 3 cm) diameter WD (98)", "Larger (> 3 cm) diameter WD (13)"),
+  point_est = c(0.5602, 0.1732,0.8559,0.7977,  0.7977, 0.1242,  0.1638,0.0739,0.0199,0.0287,-0.0628),
+  lb_ci = c( 0.4894,0.1173 ,0.7532,0.3086, 0.3086,0.0911,0.1107,0.0389,-0.0560,-0.0667,-0.1362   ),
+  ub_ci = c(0.6309,0.2290,0.9585,1.2869, 1.2869,0.1573,0.2170, 0.1089, 0.0959,0.1241,0.0105 ),
+  group = c(1,2,3,1,3,1,2,3,1,2,3),
+  region= c(1,1,1,2,2,3,3,3,4,4,4)
+)
+dat13$label <- factor(dat13$label, levels = dat13$label)
+as.factor(dat13$group)
+plot13 <- ggplot(dat13, aes(x=point_est, y=label, shape=as.factor(group),color=as.factor(region))) +scale_shape_manual(values = c(10, 16, 17))+
+  theme(legend.position="none") +scale_color_brewer(palette="Dark2")+scale_x_continuous(limits = c(-0.2,1.3))+
+  geom_point(size=5) + scale_y_discrete(limits = rev(levels(dat13$label))) + geom_vline(xintercept=0, color="black", linetype="dashed", alpha=.5) +
+  geom_hline(yintercept = c(3.5,6.5,8.5),color="black", linetype="dashed", alpha=.7)+
+  geom_errorbarh(aes(xmin=lb_ci, xmax=ub_ci), height=.2) +
+  ggtitle("A")+
+  ylab("Climate zones and WD size") + xlab("Effect size [ln(RR)]") + theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+plot13
+```
+
+
+```{r,warning=FALSE}
+library(patchwork)
+figx<- plot13+ plot9 + plot11 +plot10
+figx
+ggsave(filename="figx.png", plot=figx, device="png",
+       path=path, height=8, width=12, units="in", dpi=500)
+```
+
+
+```{r,warning=FALSE}
+hist(wood_meta_fauna$wood_diameter)
+summary(wood_meta_fauna$wood_diameter)
+```
+```{r,warning=FALSE}
+p_his<-ggplot(wood_meta_fauna, aes(x=wood_diameter/10)) + 
+  geom_histogram(color="black", fill="grey",bins=40)+ geom_vline(aes(xintercept=mean(wood_diameter/10)),
+            color="blue", linetype="dashed", size=0.5)+geom_vline(aes(xintercept=median(wood_diameter/10)),
+            color="red", linetype="dashed", size=0.5)+labs(x="WD diameter (cm)", y = "Frequency of observations")+
+  
+  theme(axis.line = element_line(colour = "black", size = 0.5),
+        axis.ticks.x=element_blank(),
+        axis.ticks.y=element_line(colour = "black"),
+        axis.text = element_text(colour = "black", size = 15),
+        axis.title = element_text(colour = "black", size = 15),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"),
+        panel.background = element_blank(),
+        strip.text = element_text(colour = "black", size = 15),
+        #legend.position = c("bottom"),
+        legend.position = "none",
+        legend.text=element_text(size=12,face="italic"),
+        legend.background = element_blank(),
+        legend.key.width=unit(0.2,"cm"),
+        legend.key.height=unit(0.2,"cm"))+
+  theme(text=element_text(size=12,  family="serif"))+ theme(axis.title = element_text(family = "palatino", size = (12), colour = "black"))+
+  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+p_his 
+```
+```{r,warning=FALSE}
+ggsave(filename="diameter hist.png", plot=p_his, device="png",
+       path=path, height=4, width=5, units="in", dpi=500)
+```
+
+
+```{r,warning=FALSE}
+prep_temp<-ggplot(wood_meta_fauna, aes(x= Precip, y= temperature, color=Clade , shape=diameter_class)) + 
+geom_point()+xlab("Annual precipitation (mm)") + ylab(bquote(Annual~temperature   ^O~C))+
+  theme(axis.line = element_line(colour = "black", size = 0.5),
+        axis.ticks.x=element_line(colour = "black"),
+        axis.ticks.y=element_line(colour = "black"),
+        axis.text = element_text(colour = "black", size = 12),
+        axis.title = element_text(colour = "black", size = 12),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.border = element_rect(fill=NA,color="black", size=0.5, linetype="solid"),
+        panel.background = element_blank(),
+        strip.text = element_text(colour = "black", size = 12),
+       #legend.position = c("bottom"),
+        legend.position = c(0.8, 0.2),
+        legend.text=element_text(size=8,face="italic"),
+        legend.background = element_blank(),
+        legend.key.width=unit(0.3,"cm"),
+        legend.key.height=unit(0.3,"cm"))+
+    labs(color="Clade",shape="Diameter class")+
+  theme(text=element_text(size=12,  family="serif"))+ theme(axis.title = element_text(family = "palatino", size = (12), colour = "black"))+
+  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))
+prep_temp
+ggsave(filename="gymn_ang_temp.png", plot=prep_temp, device="png",
+       path=path, height=4, width=5, units="in", dpi=500)
+```
+
+# Metaregression
+From a broader perspective, meta-analysis and meta-regression are part of a systematic, integrative process to make sense of publicly available yet disperse, imprecise, and heterogeneous information
+
+Meta-regression is regarded as an extension of meta-analysis. Because there is substantial unaccounted heterogeneity in the outcome of interest across studies, we continue investigating whether such heterogeneity may be further explained by differences in characteristics of the studies (methodological diversity) or study populations. This step helps to better understand whether and which study-level factors drive the measures of effect.
+
+## metaregression interpretation 
+Typical meta-regression analysis will produce a number of parameters describing the model heterogeneity:
+
+**τ2**: Is an estimate of the residual between variance (between variance not captured by the fixed part of the model) expressed in squared units of the effect estimate.
+**τ**: A measure of residual between dispersion expressed in the same units as the effect estimate.
+**I2**: Estimates how much of the unaccounted variability (residual heterogeneity + sampling error) is attributable to residual heterogeneity expressed as a percentage.
+**H2**: It estimates the ratio of the unaccounted variability relative to the sampling variability. In other words, it provides an estimate of how much our uncertainty about the parameter of interest is inflated due to consideration of all sources of variance, as opposed to a model where only within variance contributes to the width of the confidence intervals. 
+**R2adj**: It is the estimated % of heterogeneity accounted for by the addition of predictors into the model as compared to an “empty” model. In other words, it is the percentage of the heterogeneity explained by the group-level variables in the model.
+**Q**: It is a χ2-based test statistic contrasting observed differences between studies vs. the differences expected by chance.  Q is typically an under-powered statistic, and that the typical analytical scenario for meta-regression, where only a small number of observations is available may lead to both high rates of false discovery and failure to detect an existing association.
+
+## Test how single moderators influence the effect size 
+### Climate  zone
+
+```{r, warning=FALSE}
+m_reg <- rma(yi = yi, vi = vi, mods = ~climate_zone, data = wood_meta_fauna)
+m_reg
+```
+climate zones is significant and  alone explains 11.67 % of the variability in the  effect size 
+
+### Bark status 
+```{r, warning=FALSE}
+bark_metareg <- rma(yi = yi, vi = vi, mods = ~Bark_status_presence_or_absent, data = wood_meta_fauna)
+bark_metareg
+```
+Bark status is significant and  alone explains 7.63 % of the variability in the  effect size.  invertebrates on WD with bark present is lower compared to that of WD without bark
+
+### WD diameter  
+```{r, warning=FALSE}
+diameter_metareg <- rma(yi = yi, vi = vi, mods = ~wood_diameter , data = wood_meta_fauna)
+diameter_metareg
+```
+
+Wood diameter is not significant. 
+
+### WD type (natural / block)  
+```{r, warning=FALSE}
+WD_type_metareg <- rma(yi = yi, vi = vi, mods = ~natural_wood_or_block , data = wood_meta_fauna)
+WD_type_metareg
+```
+The type of WD used in the experiment (block vs natural) does not influence  invertebrates effect on WD.
+
+### Study incubation duration  
+```{r, warning=FALSE}
+duration_metareg <- rma(yi = yi, vi = vi, mods = ~Study_duration_months , data = wood_meta_fauna)
+duration_metareg
+```
+
+The incubation duration also has a significant effect on the overall  invertebrates effect on WD decomposition. It explains 5.75 % of the variability in the  effect size. 
+Invertebrates effect on WD debris decreases with time.
+
+### Clade (gymnosperms / Angiosperm) 
+```{r, warning=FALSE}
+clade_metareg <- rma(yi = yi, vi = vi, mods = ~Clade , data = wood_meta_fauna)
+clade_metareg
+```
+
+There is  no significant differences between invertebrates effect on gymnosperms and angiosperm. 
+
+### Precipitation 
+```{r, warning=FALSE}
+precip_metareg <- rma(yi = yi, vi = vi, mods = ~Precip , data = wood_meta_fauna)
+precip_metareg
+```
+The annual precipitation of the incubation sites has a significant effect on the  invertebrates effect on WD decomposition but does not explain much variability in the  effect size (0.08 %). 
+
+Invertebrates effect increases with precipitation. 
+
+### Temperature 
+```{r, warning=FALSE}
+temp_metareg <- rma(yi = yi, vi = vi, mods = ~Tmean, data = wood_meta_fauna)
+temp_metareg
+```
+The mean temperature of the incubation sites has a significant effect on the invertebrates effect on WD decomposition and explains 8.28 % variability in the  effect size. 
+Invertebrates effect increases with temperature.  
+
+## Include all the moderators into one metaregression 
+https://cjvanlissa.github.io/Doing-Meta-Analysis-in-R/meta-analysis-is-multi-level-optional.html
+https://www.metafor-project.org/doku.php/tips:model_selection_with_glmulti_and_mumin
+https://wviechtb.github.io/metafor/reference/index.html
+
+```{r, results='hold', warning=FALSE, cache=TRUE}
+metareg_all<-rma(yi ~ climate_zone+ Study_duration_months+natural_wood_or_block+Clade+Bark_status_presence_or_absent+wood_diameter+Tmean+Precip, vi=vi,method = "REML", data = wood_meta_fauna)
+summary(metareg_all)
+
+```
+
+Overall all meta regression model explains around 32.02% of the overall variability in the effect sizes. Wood diameter and study durations are however not significant in this overall model.
+
+# How does the effect size vary with the Study duration?
+The effect of  invertebrates on wood decomposition decreases with increasing latitude. This could be explained by the abundance and distribution of termites which are likely to follow the same trend. 
+
+```{r}
+hist(tropical$yi)
+hist(temperate$yi) #distribution looks ok
+hist(continental$yi) #distribution looks OK
+```
+
+```{r}
+library(lme4)
+library(lmerTest)
+lm_trop<- lmer(yi~ Study_duration_months + ( 1 | Study/Tree_species), data= tropical)
+summary(lm_trop)
+```
+```{r}
+resids <- resid(lm_trop, type='pearson')
+plot(resids~fitted(lm_trop))
+lines(lowess(resids~fitted(lm_trop)), col='red')
+plot(sqrt(abs(resids))~ fitted(lm_trop))
+lines(lowess(sqrt(abs(resids))~
+               
+               fitted(lm_trop)), col='red')
+library(car)
+
+library(arm)
+qqPlot(resids)
+```
+```{r}
+qqPlot(ranef(lm_trop)$Study$'(Intercept)')
+qqPlot(ranef(lm_trop)$Tree_species$'(Intercept)')
+
+```
+
+
+```{r}
+lm_temp<- lmer(yi~ Study_duration_months + ( 1 | Study/Tree_species), data= temperate)
+summary(lm_temp)
+```
+
+
+```{r}
+resids <- resid(lm_temp, type='pearson')
+plot(resids~fitted(lm_temp))
+lines(lowess(resids~fitted(lm_temp)), col='red')
+plot(sqrt(abs(resids))~ fitted(lm_temp))
+lines(lowess(sqrt(abs(resids))~
+               
+               fitted(lm_temp)), col='red')
+library(car)
+
+library(arm)
+qqPlot(resids)# not looking good
+```
+```{r}
+qqPlot(ranef(lm_temp)$Study$'(Intercept)')
+qqPlot(ranef(lm_temp)$Tree_species$'(Intercept)')
+
+```
+
+```{r}
+lm_cont<- lmer(yi~ Study_duration_months + ( 1 | Study/Tree_species), data= continental)
+summary(lm_cont)
+```
+
+```{r}
+wood_meta_fauna$climate_zone<- relevel(wood_meta_fauna$climate_zone, ref= "Tropical")
+lm_all<- lmer(yi~ Study_duration_months*climate_zone + ( 1 | Study/Tree_species), data= wood_meta_fauna)
+summary(lm_all)
+```
+```{r,warning=FALSE}
+resids <- resid(lm_all, type='pearson')
+plot(resids~fitted(lm_all))
+lines(lowess(resids~fitted(lm_all)), col='red')
+plot(sqrt(abs(resids))~ fitted(lm_all))
+lines(lowess(sqrt(abs(resids))~
+               
+               fitted(lm_all)), col='red')
+library(car)
+
+library(arm)
+qqPlot(resids)# not looking good
+```
+```{r,warning=FALSE}
+qqPlot(ranef(lm_all)$Study$'(Intercept)')
+qqPlot(ranef(lm_all)$Tree_species$'(Intercept)')
+```
+
+
+```{r,warning=FALSE}
+#wood_meta_fauna$climatic_region<- relevel(wood_meta_fauna$climatic_region, ref= "Temperate")
+lm_trop<- lmer(yi~ Study_duration_months + ( 1 | Study/Tree_species), data= tropical)
+lm_arid<- lm(yi~ Study_duration_months, data= arid)
+lm_temp<- lm(yi~ Study_duration_months, data= temperate)
+lm_cont<- lm(yi~ Study_duration_months, data= continental)
+#summary(lm_trop)
+summary(lm_trop)
+summary(lm_arid)
+summary(lm_temp)
+summary(lm_cont)
+
+anova(lm_trop)
+anova(lm_arid)
+anova(lm_temp)
+anova(lm_cont)
+
+
+```
+
+
+```{r,warning=FALSE}
+region_duration<- ggplot()+
+  geom_point(data=wood_meta_fauna, aes(x= Study_duration_months, y= yi, colour=climate_zone ), size=1.5,alpha=0.3)+
+  geom_smooth(data=wood_meta_fauna,method = "lm",se=FALSE,aes(x= Study_duration_months, y= yi, colour=climate_zone,linetype=climate_zone), alpha= 0.1)+
+  scale_linetype_manual (values = c("Tropical" = 5, "Arid" = 5, "Temperate" = 1,"Continental" = 5 ))+
+  geom_smooth(data=wood_meta_fauna,method = "lm",se=FALSE, color = "black", aes(x= Study_duration_months, y= yi),size=1.2)+
+  scale_linetype_manual (values = c("Tropical" = 5, "Arid" = 5, "Temperate" = 1,"Continental" = 5 ))+
+  labs(colour='Climate zone') +labs(x='Time (months)', y="Invertebrates effect size [ln(RR)]")+
+  
+  guides(linetype=FALSE)+theme(text = element_text(size = 14,face="bold"), panel.background = element_blank(),
+                                                   panel.grid.major = element_blank(), 
+                                                   panel.grid.minor = element_blank(),
+                                                   axis.line = element_line(colour = "black"),
+                                                   panel.border = element_rect(colour = "black", fill=NA, size=1.5)) +  theme(axis.text = element_text(family = "palatino", colour = "black", size = (12)))+ theme(legend.position = c(0.83,0.87),
+        legend.text=element_text(size=10),
+        legend.background = element_blank(),
+        legend.key.width=unit(0.3,"cm"),
+        legend.key.height=unit(0.3,"cm"))
+region_duration
+```
+```{r,warning=FALSE}
+ggsave(filename="region_duration.png", plot=region_duration, device="png",
+     path=path, height=4, width=5, units="in", dpi=500)
+```
+
+
+# Multivariate meta-analysis 
+In the above section, we used random effect model to estimate the overall effect size. We are interested in knowing the actual effect of  invertebrates effect on wood decomposition globally and therefore we have to put into consideration that WD species identity have an effect on the invertebrates effect. In this section we therefore consider species as a random effect in the estimation of the overall mean. Species is nested within studies. To include the random effect we will use the **rma.mv** function from metafor package. 
+
+## overall effect size when considering species as a random factor
+```{r, warning=FALSE}
+wood_meta_fauna$Study<-as.factor(wood_meta_fauna$Study)
+random_m2 <- rma.mv(yi, vi, random = ~ 1 | Study/Tree_species, data = wood_meta_fauna)
+summary(random_m2)
+```
+```{r}
+exp(0.3392)
+```
+Please note that this estimate is different from what we got in the rma model earlier without considering species as a random factor nested in different studies. For your information, initially it was around 29% but now its around 40%. We consider this new value to be the more plausible estimate. 
+
+Please note that we calculate the effect size of the subsets with rma.mv function it does not put the random factor into consideration and therefore the results are exactly the same as shown in the rma models.
+
+http://www.metafor-project.org/doku.php/tips:rma.uni_vs_rma.mv
+
+# Multivariate Modeling
+
+https://www.rdocumentation.org/packages/metafor/versions/2.4-0/topics/rma.mv 
+Next we fix a model showing how overall effect size is influenced by other moderators while considering study and tree species as a random factor.
+
+```{r, results='hold', warning=FALSE,cache=TRUE}
+mod1<- rma.mv(yi, vi, mods = ~climate_zone+ Study_duration_months+natural_wood_or_block+Clade+Bark_status_presence_or_absent+wood_diameter+Tmean+Precip, random = ~ 1 | Study/Tree_species, data=wood_meta_fauna)
+summary(mod1)
+```
+
+## Conduct model selection using glmulti
+The model selection section takes days to run depending on your computer computation power. We show the codes used to run the analysis to get the results shown in Table S2 and Table S2.
+Now we select the best set of moderators explaining the variability in the effect size using **glmulti package**. 
+```{r}
+#library(glmulti)
+#library(metafor)
+```
+
+```{r}
+#cor1 <- cor.test(wood_meta_fauna$Tmean, wood_meta_fauna$Precip, 
+ #               method = "pearson")
+#cor1
+```
+
+
+```{r}
+#dim(wood_meta_fauna)
+#wood_meta_fauna2 <- wood_meta_fauna[!apply(wood_meta_fauna[,c( "Study_duration_months","Clade","natural_wood_or_block", "Bark_status_presence_or_absent","wood_diameter","Tmean", "Precip" )], 1, anyNA),]
+#dim(wood_meta_fauna2)
+```
+
+Define a function that takes a model formula and a dataset as input and then fits a random or mixed-effects meta-regression model to the given data using maximum likelihood estimation:
+
+```{r}
+#rma.glmulti <- function (formula, data) {rma.mv (as.formula(paste(deparse(formula))), vi, random = ~ 1 | Study/Tree_species, verbose = #TRUE, control=list(rel.tol=1e-8),
+ #                                                data=wood_meta_fauna2, method = "ML")}
+```
+
+https://stackoverflow.com/questions/46050023/metafor-coupled-with-glmulti-how-to-exclude-undesirable-interactions
+
+Now we use **glmulti** function to select the best models explaining the variations in our effect size
+```{r, results='hold', warning=FALSE,cache=TRUE}
+#res <- glmulti(yi ~Study_duration_months+Clade+Bark_status_presence_or_absent+natural_wood_or_block+wood_diameter+Tmean+Precip,data=wood_meta_fauna2,
+ #              level=2, marginality=TRUE,fitfunction=rma.glmulti,method= "g", crit="aicc") 
+```
+
+
+Brief summary of the results 
+```{r}
+#BB<-plot(res, type="s")
+#summary(res)
+#eval(metafor:::.glmulti)
+#coef(res)
+```
+
+```{r}
+#print (res)
+```
+glmulti.analysis
+Method: g / Fitting: rma.glmulti / IC used: aicc
+Level: 2 / Marginality: TRUE
+From 100 models:
+Best IC: 279560.017938513
+Best model:
+[1] "yi ~ 1 + Clade + Bark_status_presence_or_absent + climate_zone + "                               
+[2] "    Study_duration_months + wood_diameter + Bark_status_presence_or_absent:Clade + "             
+[3] "    climate_zone:Clade + climate_zone:Bark_status_presence_or_absent + "                         
+[4] "    wood_diameter:Study_duration_months + Clade:Study_duration_months + "                        
+[5] "    Bark_status_presence_or_absent:Study_duration_months + climate_zone:Study_duration_months + "
+[6] "    climate_zone:wood_diameter"                                                                  
+Evidence weight: 0.235651764071749
+Worst IC: 279627.269818678
+3 models within 2 IC units.
+11 models to reach 95% of evidence weight.
+Convergence after 700 generations.
+Time elapsed: 21.6731309631798 minutes.
+
+
+
+Plot of the AICc values for all the possible models
+```{r}
+#plot(res)  
+```
+
+Here we look at the top  models within a difference of 2 AIC
+```{r}
+#top <- weightable(res)
+#top <- top[top$aicc <= min(top$aicc) + 2,]
+#top  
+```
+
+Examine the best model
+```{r}
+#summary(res@objects[[1]])
+```
+
+Multivariate Meta-Analysis Model (k = 1417; method: ML)
+
+      logLik      Deviance           AIC           BIC          AICc   
+-139756.6127   280884.2861   279559.2254   279680.1202   279560.0179   
+
+Variance Components:
+
+            estim    sqrt  nlvls  fixed              factor 
+sigma^2.1  4.5188  2.1257     19     no               Study 
+sigma^2.2  0.0471  0.2170    166     no  Study/Tree_species 
+
+Test for Residual Heterogeneity:
+QE(df = 1396) = 309893.4714, p-val < .0001
+
+Test of Moderators (coefficients 2:21):
+QM(df = 20) = 44296.8735, p-val < .0001
+
+Model Results:
+
+
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+ 
+
+ 
+estimate
+
+
+
+# Conclusion 
+
+This study investigated woody debris (WD) decomposition which is an important process in nutrient cycling within ecosystems. The results add to the current ecology knowledge by revealing that invertebrates contribute to WD decomposition and that their contribution varies with climate zone and species traits.
+
+
+
